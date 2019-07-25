@@ -5,6 +5,7 @@ export const PlayerJoin = ({ user }) => {
     const [opponentShort, setOpponentShort] = useState('');
     const [opponentUid, setOpponentUid] = useState('');
     const [gameInfo, setGameInfo] = useState({});
+    const [sessionCreated, setSessionCreated] = useState(false);
 
     const createSession = async () => {
         await firebase
@@ -12,25 +13,31 @@ export const PlayerJoin = ({ user }) => {
             .collection('sessions')
             .doc(opponentUid)
             .set({ players: [opponentUid, user.uid] });
+        setSessionCreated(true);
     };
 
     useEffect(() => {
         if (!!opponentUid) {
             try {
                 createSession();
-                const unsubscribeSnapshot = firebase
-                    .firestore()
-                    .collection('sessions')
-                    .doc(opponentUid)
-                    .onSnapshot(doc => {
-                        handleSnapshot(doc);
-                    });
-                return unsubscribeSnapshot;
             } catch (error) {
                 console.log(error);
             }
         }
     }, [opponentUid]);
+
+    useEffect(() => {
+        if (sessionCreated) {
+            const unsubscribeSnapshot = firebase
+                .firestore()
+                .collection('sessions')
+                .doc(opponentUid)
+                .onSnapshot(doc => {
+                    handleSnapshot(doc);
+                });
+            return unsubscribeSnapshot;
+        }
+    }, [sessionCreated]);
 
     const handleSnapshot = doc => {
         setGameInfo(doc.data() || {});

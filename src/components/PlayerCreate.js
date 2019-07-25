@@ -12,6 +12,11 @@ export const PlayerCreate = ({ user }) => {
             .collection('awaiting')
             .doc(short)
             .set({ uid: user.uid });
+        await firebase
+            .firestore()
+            .collection('sessions')
+            .doc(user.uid)
+            .set({});
         setShortUid(short);
     };
 
